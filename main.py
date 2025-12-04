@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
-from db import engine
+from db import engine, Base
 from sqlalchemy import text
+from routes import users
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -18,6 +19,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 
+Base.metadata.create_all(bind=engine)
+
 @app.get("/")
 def home():
     return {"message": "Welcome to SteakFlow API - track your daily habit streaks with ease."}
+
+app.include_router(users.router)
