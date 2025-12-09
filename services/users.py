@@ -4,16 +4,37 @@ from models.user_login import UserLogin
 from schemas.user import UserCreate
 from sqlalchemy.orm import Session
 from sqlalchemy import func
-from utils.shared import verify_password
+from utils.shared import decode_and_verify_google_token, verify_password
 
 
 def save_user(payload: UserCreate, db: Session):
-    user = User(firstname=payload.firstname, lastname=payload.lastname, email=payload.email)
+    if payload.method != 'email':
+        decoded_google_token = decode_and_verify_google_token(payload.token)
+
+        payload.email = decoded_google_token.get('email')
+        payload.identifier = decoded_google_token.get('sub')
+        payload.firstname = decoded_google_token.get('given_name')
+        payload.lastname = decoded_google_token.get('family_name')
+
+        user_login = db.query(UserLogin).filter(
+            UserLogin.method == payload.method,
+            UserLogin.identifier == payload.identifier
+        ).first()
+
+        if user_login is not None:
+            return user_login.user
+        
+    user = db.query(User).filter(User.email == payload.email).first()
+
+    if user is None:
+        user = User(firstname=payload.firstname, lastname=payload.lastname, email=payload.email)
+    
     user_login = UserLogin(
         user=user,
         method=payload.method,
         identifier=payload.identifier,
-        password=payload.password
+        password=payload.password,
+        last_login_at=func.now()
     )
     user.logins.append(user_login)
     db.add(user)

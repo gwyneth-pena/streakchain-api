@@ -4,8 +4,10 @@ from fastapi import HTTPException
 from argon2 import PasswordHasher
 import jwt
 from datetime import datetime, timedelta
+from google.oauth2 import id_token
+from google.auth.transport import requests
 
-from config import SECRET_KEY
+from config import GOOGLE_CLIENT_ID, SECRET_KEY
 
 def validation_error(field: str, msg: str, type_: str, status: int = 422):
     raise HTTPException(
@@ -38,3 +40,12 @@ def decode_jwt(token: str):
         validation_error("token", "Token has expired.", "token.expired", status=401)
     except jwt.InvalidTokenError:
         validation_error("token", "Invalid token.", "token.invalid", status=401)
+
+def decode_and_verify_google_token(token: str):
+    google_client_id = GOOGLE_CLIENT_ID
+    
+    try:
+        decoded_token = id_token.verify_oauth2_token(token, requests.Request(), google_client_id)
+        return decoded_token
+    except Exception as e:
+        validation_error("token", "Invalid Google token.", "token.invalid", status=401)
