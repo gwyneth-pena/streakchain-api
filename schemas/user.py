@@ -4,6 +4,7 @@ from argon2 import PasswordHasher
 from pydantic import model_validator
 
 from schemas.shared import TrimmedBaseModel
+from utils.shared import validation_error
 
 class UserCreate(TrimmedBaseModel):
     firstname: str
@@ -42,11 +43,11 @@ class UserCreate(TrimmedBaseModel):
 
         if method == 'email':
             if not email:
-                raise ValueError('Email is required for email signup.')
+                validation_error('email', 'Email is required for email signup.')
             if '@' not in email:
-                raise ValueError('Email must be valid.')
+                validation_error('email', 'Email must be valid.')
             if not password or len(password) < 8:
-                raise ValueError('Password is required and must be at least 8 characters for email signup.')
+                validation_error('password', 'Password is required and must be at least 8 characters for email signup.')
             values.identifier = email
         else:
             if not token:
@@ -63,4 +64,25 @@ class UserCreate(TrimmedBaseModel):
 class UserSignIn(TrimmedBaseModel):
     method: str
     identifier: str
+    token: Optional[str] = None
     password: Optional[str] = None
+
+    @model_validator(mode='after')
+    def validate_fields(cls, values):
+        method = values.method
+        identifier = values.identifier
+        password = values.password
+        token = values.token
+
+        if method == 'email':
+            if not identifier:
+                validation_error('identifier', 'Email is required for email login.', 'identifier')
+            if '@' not in identifier:
+                validation_error('identifier', 'Email must be valid.' , 'identifier')
+            if not password:
+                validation_error('password', 'Password is required for email login.', 'password')
+        else:
+            if not token:
+                validation_error('token', f'{method} auth method requires a token.', 'token')
+            
+        return values

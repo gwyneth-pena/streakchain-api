@@ -55,6 +55,9 @@ def save_user(payload: UserCreate, db: Session):
     return user
 
 def authenticate_user(payload: UserLogin, db: Session):
+    if payload.method != 'email' and payload.token is not None:
+        decoded_google_token = decode_and_verify_google_token(payload.token)
+        payload.identifier = decoded_google_token.get('sub')
         
     user_login = db.query(UserLogin).filter(
         UserLogin.method == payload.method,
@@ -66,16 +69,19 @@ def authenticate_user(payload: UserLogin, db: Session):
             'is_authenticated': False,
             'data': None
         }
+    
+    if payload.method == 'email':
+        is_correct_password = False
 
-    if payload.password:
-        is_correct_password = verify_password(payload.password, user_login.password)
-    
-    if  not is_correct_password:
-        return {
-            'is_authenticated': False,
-            'data': None
-        }
-    
+        if payload.password:
+            is_correct_password = verify_password(payload.password, user_login.password)
+        
+        if  not is_correct_password:
+            return {
+                'is_authenticated': False,
+                'data': None
+            }
+
     user_login.last_login_at = func.now()
     db.commit()
     
