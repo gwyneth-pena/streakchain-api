@@ -10,6 +10,7 @@ async def lifespan(app: FastAPI):
     try:
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
+        Base.metadata.create_all(bind=engine)
         print("Connected to database")
     except Exception as e:
         print("Failed to connect to database", e)
@@ -27,8 +28,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-Base.metadata.create_all(bind=engine)
 
 @app.get("/")
 def home():
