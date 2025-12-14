@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Request, Response
 from sqlalchemy.orm import Session
 from db import get_db
 from models.user import User
 from schemas.user import UserCreate, UserSignIn
 from services.users import authenticate_user, save_user
+from utils.decorators import jwt_required
 from utils.shared import create_jwt_cookie, validation_error
 
 router = APIRouter(prefix="/users", tags=["users"])
@@ -46,3 +47,17 @@ def login_user(payload: UserSignIn, response: Response, db: Session = Depends(ge
     create_jwt_cookie(response, {"user_id": user_login['data'].user_id})
     
     return {"message": "Login successful."}
+
+
+@router.get("/me")
+@jwt_required
+def get_current_user_info(request: Request, db: Session = Depends(get_db)):
+    user_id = request.state.user_id
+
+    if not user_id:
+        validation_error("jwt", "JWT cookie not found.", "jwt", 401)
+
+    user = db.query(User).filter(User.id == user_id).first()
+    del user.id
+
+    return user
