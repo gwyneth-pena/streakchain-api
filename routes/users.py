@@ -49,6 +49,12 @@ def login_user(payload: UserSignIn, response: Response, db: Session = Depends(ge
     return {"message": "Login successful."}
 
 
+@router.post("/logout")
+def logout_user(response: Response):
+    response.delete_cookie("jwt")
+    return {"message": "Logout successful."}
+
+
 @router.get("/me")
 @jwt_required
 def get_current_user_info(request: Request, db: Session = Depends(get_db)):
