@@ -1,7 +1,8 @@
 
+from datetime import datetime
 from typing import Optional
 from argon2 import PasswordHasher
-from pydantic import model_validator
+from pydantic import model_validator, EmailStr
 
 from schemas.shared import TrimmedBaseModel
 from utils.shared import validation_error
@@ -85,4 +86,37 @@ class UserSignIn(TrimmedBaseModel):
             if not token:
                 validation_error('token', f'{method} auth method requires a token.', 'token')
             
+        return values
+    
+
+class UserPasswordResetRequest(TrimmedBaseModel):
+    email: EmailStr
+
+
+class PasswordResetToken(TrimmedBaseModel):
+    email: EmailStr
+    token: str
+    expires_at: datetime
+
+
+class PasswordReset(TrimmedBaseModel):
+    token: str
+    new_password: str
+    email: Optional[EmailStr] = None
+
+    @model_validator(mode='after')
+    def validate_fields(cls, values):
+        new_password = values.new_password
+
+        if not new_password:
+            validation_error('new_password', 'New password is required.', 'new_password')
+
+        if len(new_password) < 8:
+            validation_error('new_password', 'New password must be at least 8 characters.', 'new_password')
+
+        if new_password:
+            hasher = PasswordHasher()
+            hashed_password = hasher.hash(new_password)
+            values.new_password = hashed_password
+
         return values
