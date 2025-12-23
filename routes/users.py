@@ -63,7 +63,7 @@ def request_password_reset(payload: UserPasswordResetRequest, background_tasks: 
         "reset_link": f"{FRONTEND_URL}/reset-password?token={token}",
         "expiry": '15 minutes'
     })
-    return {"message": "Password reset request sent."}
+    return {"message": "Password reset link has been sent to your email."}
 
 
 @router.post("/reset-password")
