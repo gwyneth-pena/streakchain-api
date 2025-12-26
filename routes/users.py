@@ -54,7 +54,7 @@ def login_user(payload: UserSignIn, response: Response, db: Session = Depends(ge
 
 
 @router.post("/request-password-reset")
-def request_password_reset(payload: UserPasswordResetRequest, background_tasks: BackgroundTasks, response: Response, db: Session = Depends(get_db), mongo_db=Depends(get_mongo_db)):
+def request_password_reset(payload: UserPasswordResetRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db), mongo_db=Depends(get_mongo_db)):
     user_login = db.query(UserLogin).filter(UserLogin.identifier == payload.email, UserLogin.method == 'email').first()
     if not user_login:
         validation_error("email", "Email does not exist.", "email")

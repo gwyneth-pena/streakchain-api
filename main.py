@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from contextlib import asynccontextmanager
 from db import connect_to_mongo, engine, Base, mongo_client
 from sqlalchemy import text
-from routes import users
+from routes import habits, users
 from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
@@ -43,3 +43,4 @@ def home():
     return {"message": "Welcome to StreakChain API - track your daily habit streaks with ease."}
 
 app.include_router(users.router)
+app.include_router(habits.router)
