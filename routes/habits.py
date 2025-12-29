@@ -1,9 +1,10 @@
 from db import get_db
 from fastapi import APIRouter, Depends, Request
-from schemas.habits import HabitCreate
-from services.habits import save_habit
+from schemas.habits import HabitCreate, HabitUpdate
+from services.habits import get_habits_by_user_id, patch_habit, remove_habit, save_habit
 from sqlalchemy.orm import Session
 from utils.decorators import jwt_required
+from utils.shared import validation_error
 
 router = APIRouter(prefix="/habits", tags=["habits"])
 
@@ -13,4 +14,41 @@ def create_habit(payload: HabitCreate, request: Request, db: Session = Depends(g
     user_id = request.state.user_id
     payload.user_id = user_id
     habit = save_habit(payload, db)
+
     return habit
+
+
+@router.get('/')
+@jwt_required
+def get_habits(request: Request, db: Session = Depends(get_db)):
+    user_id = request.state.user_id
+    habits = get_habits_by_user_id(user_id, db)
+
+    return habits
+
+
+@router.patch('/{habit_id}')
+@jwt_required
+def update_habit(habit_id: int, payload: HabitUpdate, request: Request, db: Session = Depends(get_db)):
+    user_id = request.state.user_id
+    payload.user_id = user_id
+    payload.id = habit_id
+    habit = patch_habit(payload, db)
+
+    return habit
+
+
+@router.delete('/{habit_id}')
+@jwt_required
+def delete_habit(habit_id: int, request: Request, db: Session = Depends(get_db)):
+    user_id = request.state.user_id
+
+    if not user_id:
+        validation_error("jwt", "JWT cookie not found.", "jwt", 401)
+
+    res = remove_habit(habit_id, db)
+
+    if not res:
+        validation_error("habit", "Habit not found.", "habit", 404)
+
+    return {"message": "Habit deleted successfully."}

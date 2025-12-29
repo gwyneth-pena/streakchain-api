@@ -20,3 +20,20 @@ class HabitCreate(TrimmedBaseModel):
             validation_error('frequency', 'Frequency must be between 0 and 31.', 'frequency')
         
         return values
+    
+
+class HabitUpdate(HabitCreate):
+    id: Optional[int] = None
+    name: Optional[str] = None
+    frequency: Optional[int] = None
+    color: Optional[str] = None
+    user_id: Optional[int] = None
+
+    @model_validator(mode='after')
+    def validate_fields(cls, values):
+        frequency = values.frequency
+
+        if frequency is not None and (frequency < 0 or frequency > 31):
+            validation_error('frequency', 'Frequency must be between 0 and 31.', 'frequency')
+        
+        return values
