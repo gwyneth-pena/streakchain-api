@@ -1,21 +1,46 @@
 
 
+from sqlalchemy import and_, func
+from models.habit_logs import HabitLog
 from models.habits import Habit
-from schemas.habits import HabitCreate, HabitUpdate
-from sqlalchemy.orm import Session, selectinload
+from schemas.habits import HabitCreate, HabitGet, HabitUpdate
+from sqlalchemy.orm import Session, selectinload, with_loader_criteria
 from utils.shared import validation_error
 
 
 def save_habit(payload: HabitCreate, db: Session):
-    habit = Habit(**payload.dict())
+    habit = Habit(**payload.model_dump(exclude_unset=True))
     db.add(habit)
     db.commit()
     db.refresh(habit)
     return habit
 
 
-def get_habits_by_user_id(user_id: int, db: Session):
-    habits = db.query(Habit).options(selectinload(Habit.logs)).filter(Habit.user_id == user_id).all()
+def get_habits_by_user_id(payload: HabitGet, user_id: int, db: Session):
+    options = [
+        selectinload(Habit.logs)
+    ]
+
+    filters = []
+
+    if payload.start_date:
+        filters.append(func.date(HabitLog.created_at) >= payload.start_date)
+    
+    if payload.end_date:
+        filters.append(func.date(HabitLog.created_at) <= payload.end_date)
+
+    if len(filters) > 0:
+        options.append(
+            with_loader_criteria(
+                HabitLog,
+                and_(*filters),
+                include_aliases=True
+            )
+        )
+
+    habits = db.query(Habit).options(*options).filter(Habit.user_id == user_id, 
+                                                       Habit.user_id == payload.user_id
+                                                    ).all()
     return habits
 
 

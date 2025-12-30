@@ -1,9 +1,16 @@
 
 
+from datetime import datetime
 from typing import Optional
 from schemas.shared import TrimmedBaseModel
 from utils.shared import validation_error
 from pydantic import model_validator
+
+
+class HabitGet(TrimmedBaseModel):
+    start_date: Optional[datetime] = None
+    end_date: Optional[datetime] = None
+    user_id: Optional[int] = None
 
 
 class HabitCreate(TrimmedBaseModel):
