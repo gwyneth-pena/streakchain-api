@@ -11,7 +11,9 @@ def save_habit_log(payload: HabitLogCreate, db: Session):
     if habit is None:
         validation_error("habit", "Habit not found.", "habit", 404)
 
-    habit_log = HabitLog(habit_id=payload.habit_id)
+    habit_log = HabitLog(habit_id=payload.habit_id, 
+                         log_date=payload.log_date
+                        )
     db.add(habit_log)
     db.commit()
     db.refresh(habit_log)
