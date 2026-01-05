@@ -20,7 +20,7 @@ def create_habit(payload: HabitCreate, request: Request, db: Session = Depends(g
     return habit
 
 
-@router.get('/')
+@router.get('')
 @jwt_required
 def get_habits(request: Request, db: Session = Depends(get_db), start_date: Optional[date] = Query(None), end_date: Optional[date] = Query(None),):
     user_id = request.state.user_id
