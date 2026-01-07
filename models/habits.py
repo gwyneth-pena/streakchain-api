@@ -20,4 +20,4 @@ class Habit(Base):
     updated_at = Column(DateTime(timezone=True), nullable=False, server_default=func.now(), onupdate=func.now())
 
     user = relationship('User', back_populates='habits')
-    logs = relationship('HabitLog', back_populates='habit', cascade='all, delete-orphan')
+    logs = relationship('HabitLog', back_populates='habit', cascade='all, delete-orphan', lazy='selectin')
