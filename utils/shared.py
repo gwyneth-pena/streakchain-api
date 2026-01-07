@@ -52,4 +52,4 @@ def decode_and_verify_google_token(token: str):
 
 def create_jwt_cookie(response: Response, data: dict, expires_in_minutes: int = 60):
     jwt_token = create_jwt(data, expires_in_minutes)
-    response.set_cookie(key="jwt", value=jwt_token, httponly=True, max_age=expires_in_minutes*60, samesite='none', secure=True)
+    response.set_cookie(key="jwt", value=jwt_token, httponly=True, max_age=expires_in_minutes*60, samesite='none', secure=True, path='/')
