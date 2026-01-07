@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from contextlib import asynccontextmanager
+from config import FRONTEND_URL
 from db import connect_to_mongo, engine, Base, mongo_client
 from sqlalchemy import text
 from routes import habit_logs, habits, users
@@ -32,7 +33,7 @@ app = FastAPI(lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200", "https://streakchain.vercel.app"],
+    allow_origins=["http://localhost:4200", FRONTEND_URL],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
