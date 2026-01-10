@@ -22,7 +22,9 @@ def create_habit_log(payload: HabitLogCreate, request: Request, session: Session
 @router.delete('/{habit_log_id}')
 @jwt_required
 def delete_habit_log(habit_log_id: int, request: Request, session: Session = Depends(get_db)):
-    res = remove_habit_log(habit_log_id, session)
+    user_id = request.state.user_id
+    
+    res = remove_habit_log(habit_log_id, user_id, session)
 
     if not res:
         validation_error("habit_log", "Habit log not found.", "habit_log", 404)

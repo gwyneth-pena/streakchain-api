@@ -38,9 +38,14 @@ def get_habits_by_user_id(payload: HabitGet, user_id: int, db: Session):
             )
         )
 
-    habits = db.query(Habit).options(*options).filter(Habit.user_id == user_id, 
-                                                       Habit.user_id == payload.user_id
-                                                    ).all()
+    habits = (db.query(Habit).options(*options)
+                .filter(Habit.user_id == user_id, 
+                        Habit.user_id == payload.user_id
+                )
+                .order_by(Habit.created_at.asc())
+                .all()
+            )
+    
     return habits
 
 
@@ -61,8 +66,8 @@ def patch_habit(payload: HabitUpdate, db: Session):
     return habit
 
 
-def remove_habit(id: int, db: Session):
-    habit = db.query(Habit).filter(Habit.id == id).first()
+def remove_habit(id: int, user_id: int, db: Session):
+    habit = db.query(Habit).filter(Habit.id == id, Habit.user_id == user_id).first()
 
     if habit is None:
         validation_error("habit", "Habit not found.", "habit", 404)

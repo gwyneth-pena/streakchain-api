@@ -49,7 +49,7 @@ def delete_habit(habit_id: int, request: Request, db: Session = Depends(get_db))
     if not user_id:
         validation_error("jwt", "JWT cookie not found.", "jwt", 401)
 
-    res = remove_habit(habit_id, db)
+    res = remove_habit(habit_id, user_id, db)
 
     if not res:
         validation_error("habit", "Habit not found.", "habit", 404)

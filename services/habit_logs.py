@@ -1,5 +1,4 @@
 from sqlalchemy.orm import Session
-
 from models.habit_logs import HabitLog
 from models.habits import Habit
 from schemas.habit_logs import HabitLogCreate
@@ -21,8 +20,12 @@ def save_habit_log(payload: HabitLogCreate, db: Session):
     return habit_log
 
 
-def remove_habit_log(habit_log_id: int, db: Session):
-    habit_log = db.query(HabitLog).filter(HabitLog.id == habit_log_id).first()
+def remove_habit_log(habit_log_id: int, user_id: int, db: Session):
+    habit_log = (db.query(HabitLog)
+                    .join(Habit)
+                    .filter(HabitLog.id == habit_log_id, Habit.user_id == user_id)
+                    .first()
+                )
 
     if habit_log is None:
         validation_error("habit_log", "Habit log not found.", "habit_log", 404)

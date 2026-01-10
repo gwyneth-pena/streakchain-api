@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from config import FRONTEND_URL
 from db import connect_to_mongo, engine, Base, mongo_client
 from sqlalchemy import text
-from routes import habit_logs, habits, users
+from routes import habit_logs, habits, notes, users
 from fastapi.middleware.cors import CORSMiddleware
 
 @asynccontextmanager
@@ -46,3 +46,4 @@ def home():
 app.include_router(users.router)
 app.include_router(habits.router)
 app.include_router(habit_logs.router)
+app.include_router(notes.router)
