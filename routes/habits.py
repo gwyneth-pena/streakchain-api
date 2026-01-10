@@ -22,7 +22,7 @@ def create_habit(payload: HabitCreate, request: Request, db: Session = Depends(g
 
 @router.get('')
 @jwt_required
-def get_habits(request: Request, db: Session = Depends(get_db), start_date: Optional[date] = Query(None), end_date: Optional[date] = Query(None),):
+def get_habits(request: Request, db: Session = Depends(get_db), start_date: Optional[date] = Query(None), end_date: Optional[date] = Query(None)):
     user_id = request.state.user_id
     payload = HabitGet(start_date=start_date, end_date=end_date, user_id=user_id)
     habits = get_habits_by_user_id(payload,user_id, db)
