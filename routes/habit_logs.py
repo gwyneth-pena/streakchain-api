@@ -10,7 +10,7 @@ from utils.shared import validation_error
 router = APIRouter(prefix="/habit-logs", tags=["habit-logs"])
 
 
-@router.post("/create")
+@router.post("")
 @jwt_required
 def create_habit_log(payload: HabitLogCreate, request: Request, session: Session = Depends(get_db)):
     payload.user_id = request.state.user_id

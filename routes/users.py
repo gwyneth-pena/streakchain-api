@@ -13,7 +13,7 @@ from utils.shared import create_jwt_cookie, validation_error
 
 router = APIRouter(prefix="/users", tags=["users"])
 
-@router.post("/create")
+@router.post("")
 def create_user(payload: UserCreate, response: Response, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     existing_user = (
         db.query(User)
