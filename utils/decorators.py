@@ -23,7 +23,12 @@ def jwt_required(func):
             pass
 
         if not is_valid:
-            response.delete_cookie("jwt")
+            response.delete_cookie(
+                key="jwt",
+                path="/",
+                samesite='none',
+                secure=True
+            )
             return validation_error("jwt", "Invalid JWT cookie.", "jwt", 401)
         
         request.state.user_id = decoded_token['user_id']
