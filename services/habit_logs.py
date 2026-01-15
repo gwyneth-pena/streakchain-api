@@ -1,3 +1,5 @@
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy import exists
 from sqlalchemy.orm import Session
 from models.habit_logs import HabitLog
 from models.habits import Habit
@@ -5,26 +7,34 @@ from schemas.habit_logs import HabitLogCreate
 from utils.shared import validation_error 
 
 def save_habit_log(payload: HabitLogCreate, db: Session):
-    habit = db.query(Habit).filter(Habit.id == payload.habit_id, Habit.user_id == payload.user_id).first()
+    habit_exists = (
+        db.query((
+            exists().where(Habit.id == payload.habit_id, Habit.user_id == payload.user_id)
+        ))
+        .scalar()
+    )
 
-    if habit is None:
+    if habit_exists is False:
         validation_error("habit", "Habit not found.", "habit", 404)
 
-    habit_log_exists = (db.query(HabitLog)
-                    .join(Habit)
-                    .filter(HabitLog.habit_id == payload.habit_id, Habit.user_id == payload.user_id, HabitLog.log_date == payload.log_date)
-                    .first()
-                )
-
-    if habit_log_exists is not None:
-        validation_error("habit_log", f"Habit log for {payload.log_date} already exists.", "habit_log", 400)
 
     habit_log = HabitLog(habit_id=payload.habit_id, 
                          log_date=payload.log_date
                         )
     
     db.add(habit_log)
-    db.commit()
+
+    try:
+        db.commit()
+    except IntegrityError:
+        db.rollback()
+        validation_error(
+            "habit_log",
+            f"Habit log for {payload.log_date} already exists.",
+            "habit_log",
+            400
+        )
+
     db.refresh(habit_log)
 
     return habit_log
