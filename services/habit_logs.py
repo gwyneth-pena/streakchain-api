@@ -10,9 +10,19 @@ def save_habit_log(payload: HabitLogCreate, db: Session):
     if habit is None:
         validation_error("habit", "Habit not found.", "habit", 404)
 
+    habit_log_exists = (db.query(HabitLog)
+                    .join(Habit)
+                    .filter(HabitLog.habit_id == payload.habit_id, Habit.user_id == payload.user_id, HabitLog.log_date == payload.log_date)
+                    .first()
+                )
+
+    if habit_log_exists is not None:
+        validation_error("habit_log", f"Habit log for {payload.log_date} already exists.", "habit_log", 400)
+
     habit_log = HabitLog(habit_id=payload.habit_id, 
                          log_date=payload.log_date
                         )
+    
     db.add(habit_log)
     db.commit()
     db.refresh(habit_log)
