@@ -41,7 +41,7 @@ app.add_middleware(
 
 @app.get("/")
 def home():
-    return {"message": "Welcome to StreakChain API - track your daily habit streaks with ease."}
+    return {"message": "Welcome to StreakChain API - track your daily habit streaks with ease. Go to /docs for more information."}
 
 app.include_router(users.router)
 app.include_router(habits.router)
