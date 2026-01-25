@@ -1,5 +1,7 @@
+from collections import defaultdict
+from datetime import date
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import exists
+from sqlalchemy import Date, Integer, cast, exists, func
 from sqlalchemy.orm import Session
 from models.habit_logs import HabitLog
 from models.habits import Habit
@@ -54,3 +56,44 @@ def remove_habit_log(habit_log_id: int, user_id: int, db: Session):
     db.commit()
 
     return True
+
+
+def get_logs_per_year(year: int,user_id: int, db: Session):
+    start_date = f"{year}-01-01"
+    end_date = f"{year}-12-31"
+
+    logs = ( 
+        db.query( 
+            Habit.id.label('habit_id'),
+            Habit.name.label('habit_name'),
+            func.cast(func.extract("month", HabitLog.log_date), Integer).label('month'),
+            func.count(HabitLog.id).label('logs_count'),
+            Habit.frequency.label('habit_frequency')
+        )
+        .join(HabitLog.habit)
+        .filter(
+            Habit.user_id == user_id,
+            HabitLog.log_date >= start_date,
+            HabitLog.log_date <= end_date
+        )
+        .group_by(
+            Habit.id,
+            Habit.name,
+            func.cast(func.extract("month", HabitLog.log_date), Integer),
+            Habit.frequency
+        )
+        .all()
+    )
+
+    result = defaultdict(dict)
+
+    for log in logs:
+        result[log.month][log.habit_id] = {
+            'habit_name': log.habit_name,
+            'logs_count': log.logs_count,
+            'habit_frequency': log.habit_frequency
+        }
+
+    result = dict(result)
+    
+    return result

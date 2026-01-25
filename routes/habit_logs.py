@@ -2,12 +2,21 @@ from fastapi import APIRouter, Depends, Request
 from db import get_db
 from sqlalchemy.orm import Session
 from schemas.habit_logs import HabitLogCreate
-from services.habit_logs import remove_habit_log, save_habit_log
+from services.habit_logs import get_logs_per_year, remove_habit_log, save_habit_log
 from utils.decorators import jwt_required
 from utils.shared import validation_error
 
 
 router = APIRouter(prefix="/habit-logs", tags=["habit-logs"])
+
+
+@router.get('/{year}')
+@jwt_required
+def get_habit_logs_per_year(year: int, request: Request, session: Session = Depends(get_db)):
+    user_id = request.state.user_id
+    logs = get_logs_per_year(year, user_id, session)
+
+    return logs
 
 
 @router.post("")
