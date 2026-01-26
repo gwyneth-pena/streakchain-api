@@ -17,18 +17,18 @@ def save_habit(payload: HabitCreate, db: Session):
 
 
 def get_habits_by_user_id(payload: HabitGet, user_id: int, db: Session):
-    options = [
-        selectinload(Habit.logs)
-    ]
+    options = []
 
     filters = []
 
-    if payload.start_date:
+    if payload.start_date and payload.end_date:
         filters.append(func.date(HabitLog.created_at) >= payload.start_date)
-    
-    if payload.end_date:
         filters.append(func.date(HabitLog.created_at) <= payload.end_date)
+        options.append(
+            selectinload(Habit.logs)
+        )
 
+    
     if len(filters) > 0:
         options.append(
             with_loader_criteria(
