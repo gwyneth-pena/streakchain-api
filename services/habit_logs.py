@@ -101,6 +101,7 @@ def get_logs_per_year(year: int,user_id: int, db: Session):
         result.setdefault(log.year, {})
         result[log.year].setdefault(log.habit_id, {
             'habit_name': log.habit_name,
+            'logs_count': 0,
             'habit_color': log.habit_color
         })
         result[log.year][log.habit_id]['logs_count'] += log.logs_count
