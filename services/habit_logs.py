@@ -67,6 +67,7 @@ def get_logs_per_year(year: int,user_id: int, db: Session):
             Habit.id.label('habit_id'),
             Habit.name.label('habit_name'),
             func.cast(func.extract("month", HabitLog.log_date), Integer).label('month'),
+            func.cast(func.extract("year", HabitLog.log_date), Integer).label('year'),
             func.count(HabitLog.id).label('logs_count'),
             Habit.frequency.label('habit_frequency'),
             Habit.color.label('habit_color')
@@ -81,6 +82,7 @@ def get_logs_per_year(year: int,user_id: int, db: Session):
             Habit.id,
             Habit.name,
             func.cast(func.extract("month", HabitLog.log_date), Integer),
+            func.cast(func.extract("year", HabitLog.log_date), Integer),
             Habit.frequency,
             Habit.color
         )
@@ -96,6 +98,15 @@ def get_logs_per_year(year: int,user_id: int, db: Session):
             'habit_frequency': log.habit_frequency,
             'habit_color': log.habit_color
         }
+        result.setdefault(log.year, {})
+        result[log.year].setdefault(log.habit_id, {
+            'habit_name': log.habit_name,
+            'logs_count': 0,
+            'habit_frequency': 0,
+            'habit_color': log.habit_color
+        })
+        result[log.year][log.habit_id]['logs_count'] += log.logs_count
+        result[log.year][log.habit_id]['habit_frequency'] += log.habit_frequency
 
     result = dict(result)
     
