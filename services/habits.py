@@ -21,9 +21,9 @@ def get_habits_by_user_id(payload: HabitGet, user_id: int, db: Session):
 
     filters = []
 
-    if payload.start_date and payload.end_date:
-        filters.append(func.date(HabitLog.log_date) >= payload.start_date)
-        filters.append(func.date(HabitLog.log_date) <= payload.end_date)
+    if payload.log_start_date and payload.log_end_date:
+        filters.append(func.date(HabitLog.log_date) >= payload.log_start_date)
+        filters.append(func.date(HabitLog.log_date) <= payload.log_end_date)
         options.append(
             selectinload(Habit.logs)
         )

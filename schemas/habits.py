@@ -8,8 +8,8 @@ from pydantic import model_validator
 
 
 class HabitGet(TrimmedBaseModel):
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    log_start_date: Optional[datetime] = None
+    log_end_date: Optional[datetime] = None
     user_id: Optional[int] = None
 
 
