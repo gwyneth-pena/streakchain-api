@@ -1,6 +1,10 @@
 
 
+from datetime import date, timedelta
+from typing import Optional
+from fastapi import Depends
 from sqlalchemy import and_, func
+from db import get_db
 from models.habit_logs import HabitLog
 from models.habits import Habit
 from schemas.habits import HabitCreate, HabitGet, HabitUpdate
@@ -74,3 +78,37 @@ def remove_habit(id: int, user_id: int, db: Session):
     db.commit()
 
     return True
+
+
+def get_habits_with_streaks(user_id: int, log_start_date: Optional[date], log_end_date: Optional[date], db: Session = Depends(get_db)):
+    payload = HabitGet(log_start_date=log_start_date, log_end_date=log_end_date, user_id=user_id)
+    habits = get_habits_by_user_id(payload,user_id, db)
+    return habits
+
+
+def prepare_habits_for_xlsx(habits: list, log_start_date: date, log_end_date: date):
+    output = []
+
+    d1 = log_start_date
+    d2 = log_end_date
+    num_days = (d2 - d1).days + 1
+
+    days = [d1 + timedelta(days=x) for x in range(num_days)]
+
+    header = ["Habits"] + [f"{d.day}\n({d.strftime('%a')})" for d in days] + ["Achieved", "Goal"]
+
+    output.append(header)
+
+    for habit in habits:
+        log_dates = [log.log_date for log in habit.logs]
+
+        row = [
+            habit.name,
+            *["★" if d in log_dates else "" for d in days],
+            len(log_dates),
+            habit.frequency
+        ]
+
+        output.append(row)
+
+    return output
