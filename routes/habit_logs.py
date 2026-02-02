@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request
 from db import get_db
 from sqlalchemy.orm import Session
 from schemas.habit_logs import HabitLogCreate
@@ -11,43 +11,43 @@ from utils.shared import generate_xlsx, validation_error
 router = APIRouter(prefix="/habit-logs", tags=["habit-logs"])
 
 
-@router.get('/{year}')
+@router.get('')
 @jwt_required
-def get_habit_logs_per_year(year: int, request: Request, session: Session = Depends(get_db)):
+def get_habit_logs_per_year(request: Request, db: Session= Depends(get_db), year: int = Query(...)):
     user_id = request.state.user_id
-    logs = get_logs_per_year(year, user_id, session)
+    logs = get_logs_per_year(year, user_id, db)
 
     return logs
 
 
-@router.get('/download-yearly-streaks/{year}')
+@router.get('/download-yearly-streaks')
 @jwt_required
-def download_yearly_streaks(year: int, request: Request, session: Session = Depends(get_db)):
+def download_yearly_streaks(request: Request, db: Session= Depends(get_db), year: int = Query(...)):
     user_id = request.state.user_id
     if not (1 <= year <= 9999):
         validation_error("year", "Invalid year.", "year", status=400)
 
-    habits = get_habits_with_streaks(user_id, None, None, session)
-    logs = get_logs_per_year(year, user_id, session)
+    habits = get_habits_with_streaks(user_id, None, None, db)
+    logs = get_logs_per_year(year, user_id, db)
     csv_data = prepare_yearly_streaks_for_xlsx(habits, logs, year)
     return generate_xlsx(csv_data, f"habits_yearly_streaks_{str(year).zfill(4)}")
 
 
 @router.post("")
 @jwt_required
-def create_habit_log(payload: HabitLogCreate, request: Request, session: Session = Depends(get_db)):
+def create_habit_log(payload: HabitLogCreate, request: Request, db: Session= Depends(get_db)):
     payload.user_id = request.state.user_id
-    habit_log = save_habit_log(payload, session)
+    habit_log = save_habit_log(payload, db)
 
     return habit_log
 
 
 @router.delete('/{habit_log_id}')
 @jwt_required
-def delete_habit_log(habit_log_id: int, request: Request, session: Session = Depends(get_db)):
+def delete_habit_log(habit_log_id: int, request: Request, db: Session= Depends(get_db)):
     user_id = request.state.user_id
     
-    res = remove_habit_log(habit_log_id, user_id, session)
+    res = remove_habit_log(habit_log_id, user_id, db)
 
     if not res:
         validation_error("habit_log", "Habit log not found.", "habit_log", 404)
