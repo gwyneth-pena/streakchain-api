@@ -1,3 +1,4 @@
+import calendar
 from collections import defaultdict
 from datetime import date
 from sqlalchemy.exc import IntegrityError
@@ -109,3 +110,26 @@ def get_logs_per_year(year: int,user_id: int, db: Session):
     result = dict(result)
     
     return result
+
+
+def prepare_yearly_streaks_for_xlsx(habits: list, logs: dict, year: int):
+    output = []
+
+    months = {
+        i: calendar.month_name[i]
+        for i in range(1, 13)
+    }
+
+    header = ['Habits'] + [months[i] for i in range(1, 13)] + ['Total']
+
+    output.append(header)
+
+    for habit in habits:
+        log = [
+            habit.name,
+            *[f"{logs.get(i, {}).get(habit.id, {}).get('logs_count', 0)}" for i in range(1, 13)],
+            f"{logs.get(year, {}).get(habit.id, {}).get('logs_count', 0)}"
+        ]
+        output.append(log)
+
+    return output
