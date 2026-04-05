@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     print("Disconnected from databases")
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(title="StreakChain API", description="API for StreakChain - a habit tracking application to help you maintain your daily streaks and achieve your goals.", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
