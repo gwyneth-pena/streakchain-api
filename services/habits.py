@@ -42,8 +42,8 @@ def get_habits_by_user_id(payload: HabitGet, user_id: int, db: Session):
             )
         )
 
-    habits = (db.query(Habit).options(*options)
-                .filter(Habit.user_id == user_id)
+    habits = (db.query(Habit).filter(Habit.user_id == user_id)
+                .options(*options)
                 .order_by(Habit.created_at.asc())
                 .all()
             )
