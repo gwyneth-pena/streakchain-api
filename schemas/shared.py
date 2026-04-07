@@ -3,6 +3,8 @@ from typing import Any
 
 class TrimmedBaseModel(BaseModel):
 
+    NO_TRIM = {"password"}
+
     @model_validator(mode="before")
     @classmethod
     def trim_strings(cls, values: Any) -> Any:
@@ -10,7 +12,7 @@ class TrimmedBaseModel(BaseModel):
 
     def _trim_recursive(cls, value: Any, key_name: str = None) -> Any:
         if isinstance(value, str):
-            if key_name and key_name.lower() == "password":
+            if key_name and key_name in cls.NO_TRIM:
                 return value
             return value.strip()
 
