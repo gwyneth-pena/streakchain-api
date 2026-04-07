@@ -8,14 +8,15 @@ class TrimmedBaseModel(BaseModel):
     def trim_strings(cls, values: Any) -> Any:
         return cls._trim_recursive(values)
 
-    @classmethod
-    def _trim_recursive(cls, value: Any) -> Any:
+    def _trim_recursive(cls, value: Any, key_name: str = None) -> Any:
         if isinstance(value, str):
+            if key_name and key_name.lower() == "password":
+                return value
             return value.strip()
 
         if isinstance(value, dict):
             return {
-                k: cls._trim_recursive(v)
+                k: cls._trim_recursive(v,k)
                 for k, v in value.items()
             }
 
