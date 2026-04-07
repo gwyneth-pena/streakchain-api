@@ -2,7 +2,6 @@ from pydantic import BaseModel, model_validator
 from typing import Any, ClassVar
 
 class TrimmedBaseModel(BaseModel):
-
     NO_TRIM: ClassVar[set[str]] = {"password"}
 
     @model_validator(mode="before")
@@ -10,9 +9,10 @@ class TrimmedBaseModel(BaseModel):
     def trim_strings(cls, values: Any) -> Any:
         return cls._trim_recursive(values)
 
+    @classmethod
     def _trim_recursive(cls, value: Any, key_name: str = None) -> Any:
         if isinstance(value, str):
-            if key_name and key_name in cls.NO_TRIM:
+            if key_name and key_name.lower() in cls.NO_TRIM:
                 return value
             return value.strip()
 
