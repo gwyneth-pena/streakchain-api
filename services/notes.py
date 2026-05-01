@@ -1,4 +1,4 @@
-from sqlalchemy import and_, func
+from sqlalchemy import and_, func, or_
 from models.notes import Note
 from schemas.notes import NoteCreate, NoteUpdate
 from sqlalchemy.orm import Session, with_loader_criteria
@@ -51,11 +51,16 @@ def get_notes_by_user_id(payload, user_id: int, db: Session):
 
     filters = []
 
-    if payload.start_date:
-        filters.append(func.date(Note.created_at) >= payload.start_date)
+    if payload.start_date and payload.end_date:
+        filters.append(Note.year >= payload.start_date.year)
+        filters.append(Note.year <= payload.end_date.year)
     
-    if payload.end_date:
-        filters.append(func.date(Note.created_at) <= payload.end_date)
+        filters.append(
+            or_(Note.year > payload.start_date.year, Note.month >= payload.start_date.month)
+        )
+        filters.append(
+            or_(Note.year < payload.end_date.year, Note.month <= payload.end_date.month)
+        )
 
     if len(filters) > 0:
         options.append(

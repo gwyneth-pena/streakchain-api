@@ -1,10 +1,13 @@
+import importlib
 from logging.config import fileConfig
+import pkgutil
 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
 from db import DATABASE_URL, Base 
+import models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -16,6 +19,9 @@ config.set_main_option(
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
+for loader, module_name, is_pkg in pkgutil.walk_packages(models.__path__, models.__name__ + "."):
+    importlib.import_module(module_name)
+
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
