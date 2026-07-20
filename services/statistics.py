@@ -33,4 +33,38 @@ def get_habit_with_max_streak(user_id: int, start_date: date, end_date: date, db
     }
 
 
+def get_total_logs(user_id: int, start_date: date, end_date: date, db: Session):
+    payload = HabitGet(log_start_date=start_date, log_end_date=end_date, user_id=user_id)
+    habits = get_habits_by_user_id(payload,user_id, db)
 
+    total_logs = 0
+
+    for habit in habits:
+        total_logs += len(habit.logs)
+    
+    return total_logs
+
+
+def get_completion_rates(user_id: int, start_date: date, end_date: date, db: Session):
+    payload = HabitGet(log_start_date=start_date, log_end_date=end_date, user_id=user_id)
+    habits = get_habits_by_user_id(payload,user_id, db)
+
+    totals_per_habit = {}
+
+    total_logs = get_total_logs(user_id, start_date, end_date, db)
+    total_frequency = 0
+    total_percentage = 0
+
+    for habit in habits:
+        total_logs_in_habit = len(habit.logs)
+        percentage_per_habit = total_logs_in_habit / habit.frequency
+        totals_per_habit[habit.name] = round(percentage_per_habit * 100, 2)
+
+        total_frequency += habit.frequency
+
+    total_percentage = round(total_logs / total_frequency * 100, 2)
+
+    return {
+        'percentages_per_habit': totals_per_habit,
+        'total_percentage': total_percentage,
+    }
