@@ -42,14 +42,14 @@ def get_statistics(user_id: int, start_date: date, end_date: date, db: Session):
         
         if streaks > max_streak:
             max_streak = streaks
-            max_streak_habit = habit.name
+            max_streak_habit.append(habit.name)
 
     # Total completion percentage calculation
     total_percentage = round((total_logs / total_frequency) * 100, 2) if total_frequency > 0 else 0.0
 
     return {
         "habit_with_max_streak": {
-            "habit_with_max_streak": max_streak_habit,
+            "habit_with_max_streak": max_streak_habit.join(', ') if max_streak_habit else None,
             "max_streak": max_streak
         },
         "total_logs": total_logs,
