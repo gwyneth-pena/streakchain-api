@@ -35,9 +35,11 @@ def get_statistics(user_id: int, start_date: date, end_date: date, db: Session):
 
         # 3. Max consecutive streaks calculation
         streaks = 0
-        habit.logs.sort(key=lambda x: x.log_date)
-        for i in range(1, len(all_dates)):
-            if habit.logs and habit.logs[i].log_date == all_dates[i]:
+
+        logs = {log.log_date for log in habit.logs}
+
+        for date in all_dates:
+            if date in logs:
                 streaks += 1
             else:
                 break
