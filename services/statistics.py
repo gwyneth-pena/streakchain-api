@@ -37,7 +37,7 @@ def get_statistics(user_id: int, start_date: date, end_date: date, db: Session):
         streaks = 0
         habit.logs.sort(key=lambda x: x.log_date)
         for i in range(1, len(all_dates)):
-            if habit.logs[i].log_date == all_dates[i]:
+            if habit.logs and habit.logs[i].log_date == all_dates[i]:
                 streaks += 1
             else:
                 break
